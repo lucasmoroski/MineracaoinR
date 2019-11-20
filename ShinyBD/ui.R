@@ -4,8 +4,21 @@ library(shinythemes)
 
 library(shiny)
 library(ggplot2)
+library(forestmodel)
 
-dataset <- diamonds
+setwd("~/TADS 2019_2/Tópicos em BD/student")
+
+d1=read.table("student-mat.csv",sep=";",header=TRUE, stringsAsFactors = FALSE)
+d2=read.table("student-por.csv",sep=";",header=TRUE, stringsAsFactors = FALSE)
+
+d3=merge(d1,d2,by=c("school","sex","age","address","famsize","Pstatus","Medu","Fedu","Mjob","Fjob","reason","nursery","internet"))
+
+d4 <- subset(d1,select = c("G1","G2","G3"))
+
+res<- lm(G3 ~ .,data=d2)
+
+dataset <- d3
+datasetg <- d4
 
 ui <- fluidPage(
   
@@ -16,35 +29,20 @@ ui <- fluidPage(
     
     sidebarPanel(
       # Inputs excluded for brevity
+      selectInput('x', 'X', names(dataset)),
+      selectInput('y', 'Y', c(None='.', names(datasetg)))
+      
     ),
     
     mainPanel(
       tabsetPanel(
-        tabPanel("Plot", plotOutput("plot")), 
+        tabPanel("Plot", plotOutput(forest_model(res))), 
         tabPanel("Summary", verbatimTextOutput("summary")), 
         tabPanel("Table", tableOutput("table"))
       )
     )
   ),
   
-  hr(),
-  
-  fluidRow(
-    column(3,
-           h4("Diamonds Explorer"),
-           sliderInput('sampleSize', 'Sample Size', 
-                       min=1, max=nrow(dataset), value=min(1000, nrow(dataset)), 
-                       step=500, round=0),
-           br(),
-           checkboxInput('jitter', 'Jitter')
-    ),
-    column(4, offset = 1,
-           selectInput('x', 'X', names(dataset))
-    ),
-    column(4,
-           selectInput('facet_row', 'Facet Row', c(None='.', names(dataset)))
-    )
-  ),
   hr(),
   hr()
 )
