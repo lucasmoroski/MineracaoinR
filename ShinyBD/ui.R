@@ -3,20 +3,43 @@ library(shinythemes)
 # Define UI for application that draws a histogram
 
 library(shiny)
-library(ggplot2)
-library(forestmodel) 
 
-pageWithSidebar(
-  headerPanel('Student'),
-  sidebarPanel(
-    selectInput('xcol', 'X Variable', choices = c('G1', 'G2', 'G3')),
-    selectInput('ycol', 'Y Variable', names(iris),
-                selected=names(iris)[[2]]),
-    numericInput('clusters', 'Cluster count', 3,
-                 min = 1, max = 9)
+d1=read.table("student-mat.csv",sep=";",header=TRUE, stringsAsFactors = FALSE)
+
+grades <- subset(d1,select = c("G1","G2","G3"))
+factors <- subset(d1, select = c("absences","age","failures","famrel","Fedu","Medu"))
+
+
+ui <- fluidPage(
+  
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "bootstrap.css")#tema lux
   ),
-  mainPanel(
-    plotOutput('plot1')
-  )
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "layout.css")#all css
+  ),
+  
+  titlePanel("Estudantes  X  Fatores Quantitativos"),
+  
+  sidebarLayout(
+    
+    sidebarPanel(
+      # Inputs excluded for brevity
+      selectInput('d', 'Disciplina',choices = list("Português" = 1, "Matemática" = 2)),
+      selectInput('x', 'Média Anual (Eixo X)', names(grades)),
+      selectInput('y', 'Fator (Eixo Y)', names(factors))
+      
+    ),
+    
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Plot", plotOutput("plot"), helpText("Este gráfico varia dentro dos 3 parâmetros ao lado.")),
+        tabPanel("ForestPlot", plotOutput("forest"), helpText("Este gráfico varia somente dentro do parâmetro 'Disciplina'.")),
+        tabPanel("BarPlot", plotOutput("barplot"), helpText("Este gráfico varia somente dentro do parâmetro 'Disciplina'."))
+      )
+    )
+  ),
+  
+  hr()
 )
 
